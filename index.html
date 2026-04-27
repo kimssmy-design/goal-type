@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나는 어떤 목표 유형일까? 🎯</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+  :root {
+    --a-bg: #FFF3E0; --a-border: #FF9800; --a-text: #E65100; --a-fill: #FF9800;
+    --b-bg: #E3F2FD; --b-border: #2196F3; --b-text: #0D47A1; --b-fill: #2196F3;
+    --c-bg: #FCE4EC; --c-border: #E91E63; --c-text: #880E4F; --c-fill: #E91E63;
+    --d-bg: #E8F5E9; --d-border: #4CAF50; --d-text: #1B5E20; --d-fill: #4CAF50;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    min-height: 100vh;
+    padding: 20px 16px 40px;
+  }
+
+  #app {
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* ───── 공통 카드 ───── */
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ───── 시작 화면 ───── */
+  .start-hero {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .start-icon { font-size: 64px; display: block; margin-bottom: 12px; }
+  .start-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .start-sub {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.7;
+  }
+  .type-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 20px 0 28px;
+  }
+  .type-chip {
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .chip-a { background: var(--a-bg); color: var(--a-text); border: 2px solid var(--a-border); }
+  .chip-b { background: var(--b-bg); color: var(--b-text); border: 2px solid var(--b-border); }
+  .chip-c { background: var(--c-bg); color: var(--c-text); border: 2px solid var(--c-border); }
+  .chip-d { background: var(--d-bg); color: var(--d-text); border: 2px solid var(--d-border); }
+
+  .start-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.5); }
+  .start-btn:active { transform: scale(0.98); }
+
+  /* ───── 질문 화면 ───── */
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .progress-label { font-size: 13px; color: #888; font-weight: 500; }
+  .progress-pct { font-size: 13px; color: #764ba2; font-weight: 700; }
+  .progress-track {
+    width: 100%;
+    height: 8px;
+    background: #ede7f6;
+    border-radius: 99px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transition: width 0.4s ease;
+  }
+
+  .q-num {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 99px;
+    margin-bottom: 12px;
+  }
+  .q-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+
+  .choice-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    background: #fafafa;
+    border: 2px solid #e0e0e0;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 15px;
+    color: #333;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  }
+  .choice-btn:hover { border-color: #bbb; background: #f0f0f0; transform: translateX(4px); }
+  .choice-btn.sel-A { background: var(--a-bg); border-color: var(--a-border); color: var(--a-text); }
+  .choice-btn.sel-B { background: var(--b-bg); border-color: var(--b-border); color: var(--b-text); }
+  .choice-btn.sel-C { background: var(--c-bg); border-color: var(--c-border); color: var(--c-text); }
+  .choice-btn.sel-D { background: var(--d-bg); border-color: var(--d-border); color: var(--d-text); }
+
+  .choice-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+  }
+  .choice-btn.sel-A .choice-label { background: var(--a-border); color: #fff; }
+  .choice-btn.sel-B .choice-label { background: var(--b-border); color: #fff; }
+  .choice-btn.sel-C .choice-label { background: var(--c-border); color: #fff; }
+  .choice-btn.sel-D .choice-label { background: var(--d-border); color: #fff; }
+
+  .next-btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 6px;
+    opacity: 0.35;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .next-btn.on { opacity: 1; pointer-events: auto; }
+  .next-btn.on:hover { transform: translateY(-2px); }
+
+  /* ───── 결과 화면 ───── */
+  .result-hero {
+    text-align: center;
+    padding: 8px 0 20px;
+    border-bottom: 2px dashed #eee;
+    margin-bottom: 20px;
+  }
+  .result-badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 99px;
+    margin-bottom: 10px;
+  }
+  .result-emoji { font-size: 56px; display: block; margin-bottom: 10px; }
+  .result-type { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+  .result-sub { font-size: 14px; color: #888; }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .analysis-box {
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 16px;
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .analysis-box p { margin-bottom: 10px; }
+  .analysis-box p:last-child { margin-bottom: 0; }
+
+  .strength-box {
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .strength-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .strength-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 14px;
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+  .strength-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+
+  .advice-box {
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 20px;
+  }
+  .advice-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .advice-text { font-size: 15px; line-height: 1.75; }
+  .advice-text strong { font-weight: 700; }
+
+  /* 점수 바 */
+  .score-section { margin-bottom: 20px; }
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .score-name { width: 68px; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .score-track {
+    flex: 1;
+    height: 10px;
+    background: #f0f0f0;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .score-bar {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.7s ease;
+  }
+  .score-val { width: 28px; font-size: 13px; font-weight: 700; text-align: right; }
+
+  .retry-btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    color: #764ba2;
+    border: 2px solid #764ba2;
+    border-radius: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .retry-btn:hover { background: #f3e5f5; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 시작 화면 -->
+  <div id="screen-start" class="screen active">
+    <div class="card">
+      <div class="start-hero">
+        <span class="start-icon">🎯</span>
+        <p class="start-title">나는 어떤 목표 유형일까?</p>
+        <p class="start-sub">20개 질문에 솔직하게 답하면<br>나의 목표 달성 스타일을 알 수 있어요!</p>
+      </div>
+      <div class="type-grid">
+        <div class="type-chip chip-a">🌱 무관심형</div>
+        <div class="type-chip chip-b">💭 고민형</div>
+        <div class="type-chip chip-c">🔥 행동형</div>
+        <div class="type-chip chip-d">🎯 목적형</div>
+      </div>
+      <button class="start-btn" onclick="startTest()">테스트 시작하기 →</button>
+    </div>
+  </div>
+
+  <!-- 질문 화면 -->
+  <div id="screen-q" class="screen">
+    <div class="card">
+      <div class="progress-header">
+        <span class="progress-label" id="q-meta">1 / 20</span>
+        <span class="progress-pct" id="q-pct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <span class="q-num" id="q-num">Q1</span>
+      <p class="q-text" id="q-text"></p>
+      <div id="choices"></div>
+      <button class="next-btn" id="next-btn" onclick="nextQ()">다음 →</button>
+    </div>
+  </div>
+
+  <!-- 결과 화면 -->
+  <div id="screen-result" class="screen">
+    <div class="card">
+      <div class="result-hero">
+        <span class="result-badge" id="r-badge"></span>
+        <span class="result-emoji" id="r-emoji"></span>
+        <p class="result-type" id="r-type"></p>
+        <p class="result-sub" id="r-sub"></p>
+      </div>
+
+      <p class="section-title">분석</p>
+      <div class="analysis-box" id="r-analysis"></div>
+
+      <p class="section-title">나의 특징</p>
+      <div class="strength-box" id="r-strength"></div>
+
+      <p class="section-title">이렇게 해봐요</p>
+      <div class="advice-box" id="r-advice"></div>
+
+      <p class="section-title">유형별 점수</p>
+      <div class="score-section" id="score-bars"></div>
+
+      <button class="retry-btn" onclick="resetTest()">↺ 다시 하기</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  { text:"목표가 생겼을 때 나는?", choices:[
+    {l:"A",t:"별로 신경 쓰지 않는다",v:"A"},
+    {l:"B",t:"생각만 엄청 많이 한다",v:"B"},
+    {l:"C",t:"일단 뭐라도 해본다",v:"C"},
+    {l:"D",t:"계획을 먼저 세운다",v:"D"}]},
+  { text:"해야 할 일이 눈앞에 있을 때 나는?", choices:[
+    {l:"A",t:"나중에 하면 되지 하고 미룬다",v:"A"},
+    {l:"B",t:"해야 한다고 생각은 하는데 못 한다",v:"B"},
+    {l:"C",t:"일단 시작하고 본다",v:"C"},
+    {l:"D",t:"우선순위를 정리한 다음 실행한다",v:"D"}]},
+  { text:"미래에 대해 생각하면?", choices:[
+    {l:"A",t:"별 생각이 없다",v:"A"},
+    {l:"B",t:"상상은 많이 하는데 막막하다",v:"B"},
+    {l:"C",t:"이것저것 일단 시도해보고 싶다",v:"C"},
+    {l:"D",t:"구체적인 계획이 머릿속에 있다",v:"D"}]},
+  { text:"실패했을 때 나는?", choices:[
+    {l:"A",t:"그냥 포기해버린다",v:"A"},
+    {l:"B",t:"왜 실패했는지 계속 생각만 한다",v:"B"},
+    {l:"C",t:"다시 시도하지만 방식은 비슷하다",v:"C"},
+    {l:"D",t:"원인을 분석하고 전략을 바꾼다",v:"D"}]},
+  { text:"새로운 취미나 활동을 시작할 때 나는?", choices:[
+    {l:"A",t:"귀찮아서 그냥 넘긴다",v:"A"},
+    {l:"B",t:"해볼까 말까 오래 고민한다",v:"B"},
+    {l:"C",t:"일단 시작해보고 맞으면 계속한다",v:"C"},
+    {l:"D",t:"내 목표와 연결되는지 먼저 판단한다",v:"D"}]},
+  { text:"공부할 때 내 모습은?", choices:[
+    {l:"A",t:"딱히 하지 않는다",v:"A"},
+    {l:"B",t:"해야지 해야지 하다가 시간이 간다",v:"B"},
+    {l:"C",t:"열심히 하긴 하는데 효율이 낮다",v:"C"},
+    {l:"D",t:"목표 점수나 범위를 정하고 계획적으로 한다",v:"D"}]},
+  { text:"하루가 끝날 때 드는 생각은?", choices:[
+    {l:"A",t:"그냥 하루가 지나갔다",v:"A"},
+    {l:"B",t:"오늘도 못 했다는 죄책감이 든다",v:"B"},
+    {l:"C",t:"바빴는데 정작 뭘 했는지 모르겠다",v:"C"},
+    {l:"D",t:"오늘 계획한 것을 얼마나 했는지 점검한다",v:"D"}]},
+  { text:"꿈이 생겼을 때 처음 하는 행동은?", choices:[
+    {l:"A",t:"특별히 아무것도 안 한다",v:"A"},
+    {l:"B",t:"그 꿈에 대한 상상을 계속 한다",v:"B"},
+    {l:"C",t:"관련된 것들을 닥치는 대로 해본다",v:"C"},
+    {l:"D",t:"꿈을 이루기 위한 단계를 적어본다",v:"D"}]},
+  { text:"친구가 나에게 대회나 도전에 참가해보라고 하면?", choices:[
+    {l:"A",t:"귀찮으니 됐다고 한다",v:"A"},
+    {l:"B",t:"해볼까? 못 하면 어떡하지? 계속 고민한다",v:"B"},
+    {l:"C",t:"일단 참가 신청부터 한다",v:"C"},
+    {l:"D",t:"준비 기간과 전략을 생각해보고 결정한다",v:"D"}]},
+  { text:"시험 전날 나는?", choices:[
+    {l:"A",t:"그냥 자거나 논다",v:"A"},
+    {l:"B",t:"걱정은 많은데 공부가 잘 안 된다",v:"B"},
+    {l:"C",t:"벼락치기라도 열심히 한다",v:"C"},
+    {l:"D",t:"미리 세운 계획에 따라 마무리 정리를 한다",v:"D"}]},
+  { text:"수행평가가 다가올 때 나는?", choices:[
+    {l:"A",t:"생각하지 않으려 한다",v:"A"},
+    {l:"B",t:"해야 하는데 어떻게 해야 하지 하고 계속 고민한다",v:"B"},
+    {l:"C",t:"일단 뭔가를 만들기 시작한다",v:"C"},
+    {l:"D",t:"마감일 역산해서 일정을 짠다",v:"D"}]},
+  { text:"내가 좋아하는 일을 발견했을 때 나는?", choices:[
+    {l:"A",t:"그냥 즐기다 끝낸다",v:"A"},
+    {l:"B",t:"이걸 살려볼까? 아닌가? 계속 생각한다",v:"B"},
+    {l:"C",t:"일단 더 많이 해본다",v:"C"},
+    {l:"D",t:"이 분야에서 목표를 세우고 방향을 잡는다",v:"D"}]},
+  { text:"모둠 활동에서 역할을 정할 때 나는?", choices:[
+    {l:"A",t:"아무거나 시키는 것만 한다",v:"A"},
+    {l:"B",t:"뭘 맡아야 할지 고민이 많다",v:"B"},
+    {l:"C",t:"일단 뭐든 해보겠다고 자원한다",v:"C"},
+    {l:"D",t:"내가 잘할 수 있는 역할을 파악하고 맡는다",v:"D"}]},
+  { text:"장래 희망을 묻는 질문을 받으면?", choices:[
+    {l:"A",t:"없어요 하고 넘긴다",v:"A"},
+    {l:"B",t:"이게 맞나 저게 맞나 여러 개를 말한다",v:"B"},
+    {l:"C",t:"해보고 싶은 것들을 여러 개 나열한다",v:"C"},
+    {l:"D",t:"이미 정해둔 것을 자신 있게 말한다",v:"D"}]},
+  { text:"새 학기 목표를 세울 때 나는?", choices:[
+    {l:"A",t:"딱히 세우지 않는다",v:"A"},
+    {l:"B",t:"거창하게 세웠다가 흐지부지된다",v:"B"},
+    {l:"C",t:"여러 가지를 막 적어둔다",v:"C"},
+    {l:"D",t:"실현 가능한 것부터 순서를 정해 적는다",v:"D"}]},
+  { text:"어떤 목표를 이루기까지 시간이 오래 걸릴 때 나는?", choices:[
+    {l:"A",t:"처음부터 포기하거나 관심을 잃는다",v:"A"},
+    {l:"B",t:"될까 안 될까 걱정하며 시작을 못 한다",v:"B"},
+    {l:"C",t:"일단 해보다가 지쳐서 멈추기도 한다",v:"C"},
+    {l:"D",t:"작은 단계를 나눠서 꾸준히 나아간다",v:"D"}]},
+  { text:"스마트폰 사용 시간을 줄이기로 했다면 나는?", choices:[
+    {l:"A",t:"금방 잊어버린다",v:"A"},
+    {l:"B",t:"줄여야 하는데... 하면서 계속 본다",v:"B"},
+    {l:"C",t:"며칠은 지키다가 흐지부지된다",v:"C"},
+    {l:"D",t:"사용 시간을 기록하며 구체적으로 줄여간다",v:"D"}]},
+  { text:"나에 대해 가장 잘 맞는 말은?", choices:[
+    {l:"A",t:"사실 목표나 꿈에 별로 관심이 없다",v:"A"},
+    {l:"B",t:"생각이 너무 많아서 시작이 힘들다",v:"B"},
+    {l:"C",t:"열정은 있는데 방향을 못 잡는다",v:"C"},
+    {l:"D",t:"하고 싶은 게 명확하고 계획도 있다",v:"D"}]},
+  { text:"친구가 목표를 이뤘다는 소식을 들었을 때 나는?", choices:[
+    {l:"A",t:"그냥 잘됐네 하고 넘긴다",v:"A"},
+    {l:"B",t:"나도 해야 하는데 하며 부러워한다",v:"B"},
+    {l:"C",t:"나도 뭔가 해야겠다며 자극받는다",v:"C"},
+    {l:"D",t:"나는 어떤 단계에 있는지 점검해본다",v:"D"}]},
+  { text:"지금 이 순간 가장 솔직한 나의 모습은?", choices:[
+    {l:"A",t:"꿈이나 목표보다 지금 당장 편한 게 좋다",v:"A"},
+    {l:"B",t:"해야 할 건 알겠는데 자꾸 망설여진다",v:"B"},
+    {l:"C",t:"뭔가는 하고 있는데 갈 길이 선명하지 않다",v:"C"},
+    {l:"D",t:"목표가 있고 그걸 향해 실제로 움직이고 있다",v:"D"}]}
+];
+
+const results = {
+  A: {
+    emoji: "🌱",
+    name: "무관심형",
+    badge: "TYPE A",
+    badgeBg: "#FF9800", badgeColor: "#fff",
+    sub: "지금 당장의 편안함을 중요하게 생각하는 유형",
+    analysisBg: "#FFF3E0", analysisColor: "#6D4C41",
+    analysis: `
+      <p>무관심형은 목표나 꿈에 대해 아직 큰 관심을 갖지 못하는 상태예요. 이 유형의 학생들은 대부분 지금 이 순간의 즐거움과 편안함을 우선시하는 경향이 있어요. 딱히 나쁜 게 아니에요 — 모든 사람이 같은 시기에 같은 속도로 목표를 갖게 되는 건 아니니까요.</p>
+      <p>하지만 중요한 건, 아무것도 하지 않는 채로 시간이 흘러가면 나중에 "그때 조금이라도 해봤더라면" 하는 후회가 남을 수 있다는 거예요. 지금은 목표가 없어도 괜찮아요. 대신, 아주 작은 것 하나라도 관심 가는 게 있는지 천천히 찾아봐요.</p>
+      <p>무관심형의 핵심 변화 포인트는 '호기심'이에요. 내가 무엇을 할 때 시간 가는 줄 모르는지, 어떤 이야기를 들을 때 귀가 쫑긋해지는지를 관찰해 보세요. 거창한 꿈 말고, 그냥 '오늘 재미있었던 것' 한 가지를 기록하는 것부터 시작해도 충분해요.</p>`,
+    strengthBg: "#FFF8E1", strengthBorder: "#FF9800", strengthTitle: "이 유형의 솔직한 모습",
+    strengthColor: "#E65100", dotColor: "#FF9800",
+    strengths: ["자기 자신을 꾸미거나 과장하지 않는 솔직함이 있어요","현재에 집중할 수 있는 능력이 있어요","강요보다는 자발적인 동기에서 움직이는 스타일이에요"],
+    adviceBg: "#FFF3E0", adviceBorder: "#FF9800", adviceColor: "#6D4C41",
+    advice: `<span class="strength-dot" style="background:#FF9800; display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px;"></span><strong>작은 목표부터 시작해봐요!</strong><br><br>
+    "오늘 일기 한 줄 쓰기", "유튜브 보는 시간 10분 줄이기"처럼 아주 작고 쉬운 것부터 시작해보세요. 큰 목표가 없어도 되요. 매일 아침 오늘 딱 하나만 해보자를 정하는 습관이 쌓이면, 어느 순간 목표를 향해 나아가는 자신을 발견할 수 있을 거예요. 스스로에게 너무 가혹하지 말고, 지금 이 순간 자신을 인정해주는 것도 중요해요.`,
+    barColor: "#FF9800"
+  },
+  B: {
+    emoji: "💭",
+    name: "고민형",
+    badge: "TYPE B",
+    badgeBg: "#2196F3", badgeColor: "#fff",
+    sub: "생각이 깊고 상상력이 풍부하지만 실행이 아쉬운 유형",
+    analysisBg: "#E3F2FD", analysisColor: "#1A237E",
+    analysis: `
+      <p>고민형은 생각이 정말 많고 풍부한 상상력을 가진 유형이에요. 꿈에 대해 이미 많이 생각하고 있고, 어떻게 해야 할지도 머릿속에서 그려보는 편이에요. 이 유형의 가장 큰 강점은 바로 '깊이 있는 사고력'이에요.</p>
+      <p>하지만 문제는 그 생각이 행동으로 이어지지 못하는 데 있어요. "완벽하게 준비되면 시작하자"는 마음이 결국 시작 자체를 막아버리는 경우가 많거든요. 사실 세상에 완벽한 시작 타이밍은 없어요. 조금 부족하더라도 일단 첫 발을 내딛는 것이 훨씬 중요해요.</p>
+      <p>고민형에게 가장 필요한 건 '완벽함을 내려놓는 연습'이에요. 너무 많이 생각하면 오히려 행동이 느려지고 기회를 놓치게 돼요. 오늘 고민한 내용 중 딱 하나만 실제로 해보는 연습을 해보세요. 생각의 힘을 행동으로 전환하는 순간, 엄청난 잠재력이 폭발할 거예요!</p>`,
+    strengthBg: "#E8EAF6", strengthBorder: "#2196F3", strengthTitle: "이 유형의 강점",
+    strengthColor: "#0D47A1", dotColor: "#2196F3",
+    strengths: ["어떤 일이든 신중하게 생각하고 접근해요","풍부한 상상력과 아이디어를 가지고 있어요","신중한 만큼 실수가 적고 준비성이 뛰어나요"],
+    adviceBg: "#E3F2FD", adviceBorder: "#2196F3", adviceColor: "#1A237E",
+    advice: `<span class="strength-dot" style="background:#2196F3; display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px;"></span><strong>완벽 말고, '일단 시작'!</strong><br><br>
+    오늘 5분만 투자해서 그 고민 중 하나를 실제 행동으로 옮겨보세요. 일기에 생각을 쓰는 것도 좋아요. 하지만 다음날은 그 일기 내용 중 딱 한 줄을 실천해봐요. "생각 → 종이에 쓰기 → 한 가지만 실천"의 루틴을 만들어 가다 보면, 생각이 현실이 되는 경험을 할 수 있을 거예요!`,
+    barColor: "#2196F3"
+  },
+  C: {
+    emoji: "🔥",
+    name: "행동형",
+    badge: "TYPE C",
+    badgeBg: "#E91E63", badgeColor: "#fff",
+    sub: "열정과 행동력은 넘치지만 방향 설정이 필요한 유형",
+    analysisBg: "#FCE4EC", analysisColor: "#880E4F",
+    analysis: `
+      <p>행동형은 정말 에너지가 넘치는 유형이에요! 뭔가 새로운 게 생기면 바로 시작하고, 열심히 하는 자세가 있어요. 이 유형의 가장 큰 강점은 '행동력'과 '도전 정신'이에요. 주저하지 않고 뛰어드는 용기는 정말 대단한 능력이에요.</p>
+      <p>하지만 아쉬운 점이 있어요. 방향 없이 달리다 보면 체력만 소모되고, 정작 중요한 목표에는 도달하지 못하는 경우가 생겨요. "열심히 했는데 왜 결과가 안 나오지?" 라는 생각이 드는 순간이 바로 이 유형의 시그널이에요. 행동하기 전에 딱 10분만 "왜 하는지, 어떻게 하면 효율적인지"를 생각해보는 습관이 필요해요.</p>
+      <p>행동형이 방향까지 잡게 되면 정말 무서운 유형이 돼요. 열정과 실행력을 이미 갖고 있으니까요. 여기에 전략만 더해지면 목적형으로 업그레이드될 수 있는 최고의 조건을 갖춘 유형이에요!</p>`,
+    strengthBg: "#FFEBEE", strengthBorder: "#E91E63", strengthTitle: "이 유형의 강점",
+    strengthColor: "#880E4F", dotColor: "#E91E63",
+    strengths: ["망설이지 않고 도전하는 강한 실행력이 있어요","실패해도 다시 일어서는 회복력이 강해요","에너지와 열정이 주변 사람들에게도 영향을 줘요"],
+    adviceBg: "#FCE4EC", adviceBorder: "#E91E63", adviceColor: "#880E4F",
+    advice: `<span class="strength-dot" style="background:#E91E63; display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px;"></span><strong>달리기 전에 방향부터 확인해봐요!</strong><br><br>
+    뭔가 시작하기 전에 딱 10분만 "이걸 왜 하는지, 어떤 결과를 원하는지"를 종이에 써봐요. 그리고 3단계 계획만 세워보세요. (1단계, 2단계, 3단계) 복잡하지 않아도 돼요. 방향이 생기면 그 넘치는 행동력이 두 배, 세 배의 결과로 돌아올 거예요. 너의 에너지는 정말 소중한 자원이야, 낭비하지 마!`,
+    barColor: "#E91E63"
+  },
+  D: {
+    emoji: "🎯",
+    name: "목적형",
+    badge: "TYPE D",
+    badgeBg: "#4CAF50", badgeColor: "#fff",
+    sub: "계획과 실행이 균형 잡힌 이상적인 목표 달성 유형",
+    analysisBg: "#E8F5E9", analysisColor: "#1B5E20",
+    analysis: `
+      <p>목적형은 네 가지 유형 중 가장 균형 잡힌 유형이에요. 단순히 꿈을 꾸는 것을 넘어서, 그 꿈을 향한 구체적인 계획을 세우고 실제로 실행하는 능력을 가지고 있어요. 자신이 무엇을 원하는지 알고, 그것을 이루기 위해 무엇을 해야 하는지도 알고 있어요.</p>
+      <p>이 유형의 학생들은 실패를 해도 쉽게 무너지지 않아요. 왜냐하면 실패 자체를 하나의 데이터로 보고, 다음 전략에 활용하기 때문이에요. 목표를 향해 꾸준히 나아가는 이 태도는 어른이 되어서도 정말 큰 힘이 돼요.</p>
+      <p>다만 한 가지 주의할 점이 있어요. 목적형은 계획에 너무 집착하다 보면 새로운 기회나 즐거움을 놓칠 수도 있어요. 가끔은 계획에 없던 것도 즐겨보고, 예상치 못한 만남이나 경험도 소중히 여겨봐요. 지금처럼만 하면 충분히 멋진 사람이 될 수 있어요!</p>`,
+    strengthBg: "#F1F8E9", strengthBorder: "#4CAF50", strengthTitle: "이 유형의 강점",
+    strengthColor: "#1B5E20", dotColor: "#4CAF50",
+    strengths: ["목표를 세우고 꾸준히 실행하는 힘이 있어요","실패를 분석하고 성장의 발판으로 삼아요","자기 관리 능력이 뛰어나고 시간을 효율적으로 써요"],
+    adviceBg: "#E8F5E9", adviceBorder: "#4CAF50", adviceColor: "#1B5E20",
+    advice: `<span class="strength-dot" style="background:#4CAF50; display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px;"></span><strong>지금처럼 계속 성장해요!</strong><br><br>
+    이미 훌륭한 목표 달성 스타일을 갖고 있어요. 앞으로는 나만의 성장뿐 아니라, 주변 친구들과 함께 성장하는 경험도 해보세요. 내가 아는 것을 나누고, 서로 목표를 응원하는 관계를 만들어가는 것도 중요한 능력이에요. 가끔은 쉬어가는 것도 잊지 말고, 과정을 즐기는 여유도 갖아봐요!`,
+    barColor: "#4CAF50"
+  }
+};
+
+const typeNames = { A:"🌱 무관심형", B:"💭 고민형", C:"🔥 행동형", D:"🎯 목적형" };
+let scores = {A:0,B:0,C:0,D:0};
+let current = 0;
+let selected = null;
+
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function startTest() {
+  scores = {A:0,B:0,C:0,D:0};
+  current = 0;
+  selected = null;
+  show("screen-q");
+  renderQ();
+}
+
+function renderQ() {
+  const q = questions[current];
+  const pct = Math.round((current / questions.length) * 100);
+  document.getElementById("q-meta").textContent = `${current+1} / ${questions.length}`;
+  document.getElementById("q-pct").textContent = pct + "%";
+  document.getElementById("progress-fill").style.width = pct + "%";
+  document.getElementById("q-num").textContent = "Q" + (current+1);
+  document.getElementById("q-text").textContent = q.text;
+
+  const choicesEl = document.getElementById("choices");
+  choicesEl.innerHTML = "";
+  selected = null;
+  const btn = document.getElementById("next-btn");
+  btn.classList.remove("on");
+  btn.textContent = current < questions.length - 1 ? "다음 →" : "결과 보기 →";
+
+  q.choices.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "choice-btn";
+    b.innerHTML = `<span class="choice-label">${c.l}</span>${c.t}`;
+    b.onclick = () => {
+      document.querySelectorAll(".choice-btn").forEach(x => {
+        x.className = "choice-btn";
+      });
+      b.classList.add("sel-" + c.v);
+      selected = c.v;
+      document.getElementById("next-btn").classList.add("on");
+    };
+    choicesEl.appendChild(b);
+  });
+}
+
+function nextQ() {
+  if (!selected) return;
+  scores[selected]++;
+  current++;
+  if (current < questions.length) {
+    renderQ();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  const sorted = Object.entries(scores).sort((a,b) => b[1]-a[1]);
+  const top = sorted[0][0];
+  const r = results[top];
+  const total = questions.length;
+
+  const badge = document.getElementById("r-badge");
+  badge.textContent = r.badge;
+  badge.style.background = r.badgeBg;
+  badge.style.color = r.badgeColor;
+
+  document.getElementById("r-emoji").textContent = r.emoji;
+  document.getElementById("r-type").textContent = r.name;
+  document.getElementById("r-type").style.color = r.badgeBg;
+  document.getElementById("r-sub").textContent = r.sub;
+
+  const aBox = document.getElementById("r-analysis");
+  aBox.style.background = r.analysisBg;
+  aBox.style.color = r.analysisColor;
+  aBox.innerHTML = r.analysis;
+
+  const sBox = document.getElementById("r-strength");
+  sBox.style.background = r.strengthBg;
+  sBox.style.border = "2px solid " + r.strengthBorder;
+  sBox.innerHTML = `<div class="strength-title" style="color:${r.strengthColor}">✅ ${r.strengthTitle}</div>` +
+    r.strengths.map(s => `<div class="strength-item"><span class="strength-dot" style="background:${r.dotColor}"></span><span style="color:${r.strengthColor}">${s}</span></div>`).join("");
+
+  const advBox = document.getElementById("r-advice");
+  advBox.style.background = r.adviceBg;
+  advBox.style.border = "2px solid " + r.adviceBorder;
+  advBox.innerHTML = `<div class="advice-title" style="color:${r.adviceColor}">💡 선생님의 조언</div><div class="advice-text" style="color:${r.adviceColor}">${r.advice}</div>`;
+
+  const barsEl = document.getElementById("score-bars");
+  barsEl.innerHTML = "";
+  sorted.forEach(([type, score]) => {
+    const pct = Math.round((score / total) * 100);
+    const res = results[type];
+    const row = document.createElement("div");
+    row.className = "score-row";
+    row.innerHTML = `
+      <span class="score-name" style="color:${res.barColor}">${typeNames[type].split(" ")[1]}</span>
+      <div class="score-track"><div class="score-bar" style="width:0%; background:${res.barColor}" data-pct="${pct}"></div></div>
+      <span class="score-val" style="color:${res.barColor}">${score}점</span>`;
+    barsEl.appendChild(row);
+  });
+
+  show("screen-result");
+  setTimeout(() => {
+    document.querySelectorAll(".score-bar").forEach(el => {
+      el.style.width = el.dataset.pct + "%";
+    });
+  }, 150);
+}
+
+function resetTest() {
+  show("screen-start");
+}
+</script>
+</body>
+</html>
